@@ -32,8 +32,8 @@ export default function Calendar({
     
     // First day of month (0 = Sunday, 1 = Monday, etc.)
     const firstDay = new Date(year, month, 1);
-    // Convert Sunday-based (0=Sun) to Monday-based (0=Mon) week format:
-    // Adding 6 and using modulo converts: Sun(0)→6, Mon(1)→0, Tue(2)→1, etc.
+    // Convert from JavaScript's Sunday-first (0=Sun, 1=Mon, ..., 6=Sat) 
+    // to Monday-first indexing (0=Mon, 1=Tue, ..., 6=Sun) for German calendar standard
     const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
     
     // Last day of month

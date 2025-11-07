@@ -36,13 +36,6 @@ export default function TaskSummary({ tasks = [], selectedDate, onTaskPress }) {
     return date.toLocaleDateString('de-DE', options);
   };
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('de-DE', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
   // Filter tasks for the selected date
   const tasksForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
