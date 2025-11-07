@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { storageService } from '../services/storageService';
+import { notificationService } from '../services/notificationService';
 
 const PlantContext = createContext();
 
@@ -11,7 +12,12 @@ export const PlantProvider = ({ children }) => {
   // Load data on mount
   useEffect(() => {
     loadData();
+    initializeNotifications();
   }, []);
+
+  const initializeNotifications = async () => {
+    await notificationService.requestPermissions();
+  };
 
   const loadData = async () => {
     try {
@@ -36,17 +42,28 @@ export const PlantProvider = ({ children }) => {
       
       // Create default water task for the plant
       if (plantData.wateringGeneralBenchmark) {
+        const intervalDays = parseInt(plantData.wateringGeneralBenchmark.value.split('-')[0]) || 7;
+        const nextDueDate = new Date(Date.now() + intervalDays * 24 * 60 * 60 * 1000);
+        
         const waterTask = {
           plantId: newPlant.id,
           type: 'Water',
           title: `Water ${plantData.name}`,
           repeatInterval: {
-            value: parseInt(plantData.wateringGeneralBenchmark.value.split('-')[0]) || 7,
+            value: intervalDays,
             unit: 'days',
           },
-          nextDueDate: new Date(Date.now() + (parseInt(plantData.wateringGeneralBenchmark.value.split('-')[0]) || 7) * 24 * 60 * 60 * 1000).toISOString(),
+          nextDueDate: nextDueDate.toISOString(),
         };
         await addTask(waterTask);
+
+        // Schedule notification
+        await notificationService.scheduleWateringNotification({
+          plantName: plantData.name,
+          plantImage: plantData.imageUri,
+          triggerDate: nextDueDate,
+          taskId: Date.now(), // Will be updated with actual task ID
+        });
       }
       
       return newPlant;
@@ -71,6 +88,7 @@ export const PlantProvider = ({ children }) => {
       await storageService.deletePlant(id);
       setPlants(prev => prev.filter(p => p.id !== id));
       setTasks(prev => prev.filter(t => t.plantId !== id));
+      // Note: Notifications will be rescheduled on next app start
     } catch (error) {
       console.error('Error deleting plant:', error);
       throw error;
@@ -104,6 +122,20 @@ export const PlantProvider = ({ children }) => {
       // Reload tasks to get updated data
       const updatedTasks = await storageService.getTasks();
       setTasks(updatedTasks);
+      
+      // Reschedule notification for the updated task
+      const task = updatedTasks.find(t => t.id === taskId);
+      if (task && task.nextDueDate) {
+        const plant = plants.find(p => p.id === task.plantId);
+        if (plant) {
+          await notificationService.scheduleWateringNotification({
+            plantName: plant.name,
+            plantImage: plant.imageUri,
+            triggerDate: new Date(task.nextDueDate),
+            taskId: task.id,
+          });
+        }
+      }
     } catch (error) {
       console.error('Error completing task:', error);
       throw error;
