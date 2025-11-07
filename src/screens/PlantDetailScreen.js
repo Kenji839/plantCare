@@ -9,6 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import { usePlants } from '../context/PlantContext';
+import Calendar from '../components/Calendar';
+import TaskSummary from '../components/TaskSummary';
 
 export default function PlantDetailScreen({ route, navigation }) {
   const { plantId } = route.params;
@@ -16,6 +18,7 @@ export default function PlantDetailScreen({ route, navigation }) {
   const [plant, setPlant] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
     const foundPlant = plants.find(p => p.id === plantId);
@@ -60,33 +63,28 @@ export default function PlantDetailScreen({ route, navigation }) {
     );
   };
 
-  const getTaskIcon = (type) => {
-    switch (type) {
-      case 'Water':
-        return '💧';
-      case 'Light':
-        return '☀️';
-      case 'Prune':
-        return '✂️';
-      default:
-        return '📋';
-    }
+  const handleMonthChange = (delta) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + delta);
+    setCurrentMonth(newMonth);
   };
 
-  const getDaysUntilDue = (dueDate) => {
-    const now = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due - now;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
   };
 
-  const formatDate = (date) => {
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}.${month}.${year}`;
+  const handleTaskPress = async (task) => {
+    Alert.alert(
+      'Aufgabe erledigen',
+      `${task.title} als erledigt markieren?`,
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Erledigen',
+          onPress: () => handleCompleteTask(task.id),
+        },
+      ]
+    );
   };
 
   if (!plant) {
@@ -127,45 +125,21 @@ export default function PlantDetailScreen({ route, navigation }) {
 
         {/* Calendar Section */}
         <View style={styles.calendarSection}>
-          <Text style={styles.calendarMonth}>
-            {selectedDate.toLocaleDateString('en-US', { month: 'long' })}
-          </Text>
-          <View style={styles.calendar}>
-            <Text style={styles.calendarNote}>Calendar view - simplified</Text>
-          </View>
+          <Calendar
+            currentDate={currentMonth}
+            onMonthChange={handleMonthChange}
+            tasks={tasks}
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+          />
         </View>
 
-        {/* Current Date Display */}
-        <View style={styles.dateDisplay}>
-          <Text style={styles.dateText}>{formatDate(new Date())}</Text>
-        </View>
-
-        {/* Tasks Section */}
-        <View style={styles.tasksSection}>
-          <Text style={styles.sectionTitle}>Tasks</Text>
-          {tasks.length > 0 ? (
-            tasks.map((task) => {
-              const daysUntil = getDaysUntilDue(task.nextDueDate);
-              return (
-                <TouchableOpacity
-                  key={task.id}
-                  style={styles.taskItem}
-                  onPress={() => handleCompleteTask(task.id)}
-                >
-                  <Text style={styles.taskIcon}>{getTaskIcon(task.type)}</Text>
-                  <View style={styles.taskContent}>
-                    <Text style={styles.taskTitle}>{task.type}</Text>
-                    <Text style={styles.taskSubtitle}>
-                      {daysUntil === 0 ? 'Today' : daysUntil < 0 ? 'Overdue' : `In ${daysUntil} days`}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })
-          ) : (
-            <Text style={styles.noTasks}>No tasks for this plant</Text>
-          )}
-        </View>
+        {/* Task Summary Section */}
+        <TaskSummary
+          tasks={tasks}
+          selectedDate={selectedDate}
+          onTaskPress={handleTaskPress}
+        />
 
         {/* Plant Info Section */}
         <View style={styles.infoSection}>
@@ -270,73 +244,7 @@ const styles = StyleSheet.create({
   },
   calendarSection: {
     padding: 20,
-  },
-  calendarMonth: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  calendar: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-  },
-  calendarNote: {
-    fontSize: 14,
-    color: '#999',
-  },
-  dateDisplay: {
     backgroundColor: '#F9F9F9',
-    paddingVertical: 15,
-    alignItems: 'center',
-  },
-  dateText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  tasksSection: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-  },
-  taskItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  taskIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  taskContent: {
-    flex: 1,
-  },
-  taskTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  taskSubtitle: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 2,
-  },
-  noTasks: {
-    textAlign: 'center',
-    color: '#999',
-    fontSize: 16,
-    marginTop: 10,
   },
   infoSection: {
     padding: 20,
