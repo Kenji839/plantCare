@@ -1,11 +1,12 @@
 /**
  * Formatiert ein Datum zu einem lesbaren String
  * @param {Date} date - Das zu formatierende Datum
+ * @param {string} locale - Optionales Locale (Standard: 'de-DE')
  * @returns {string} Formatierter Datumstring
  */
-export const formatDate = (date) => {
+export const formatDate = (date, locale = 'de-DE') => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('de-DE', options);
+  return date.toLocaleDateString(locale, options);
 };
 
 /**

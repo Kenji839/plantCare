@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 export default function AddPlantScreen() {
   const [plantName, setPlantName] = useState('');
   const [wateringDays, setWateringDays] = useState('');
 
   const handleAddPlant = () => {
-    if (plantName && wateringDays) {
-      console.log('Neue Pflanze hinzufügen:', { plantName, wateringDays });
-      // Hier würde die Logik zum Hinzufügen einer Pflanze kommen
-      // z.B. zu einem State Management System oder API
+    if (!plantName || !wateringDays) {
+      Alert.alert(
+        'Fehlende Informationen',
+        'Bitte gib einen Pflanzennamen und ein Gießintervall ein.',
+        [{ text: 'OK' }]
+      );
+      return;
     }
+    
+    console.log('Neue Pflanze hinzufügen:', { plantName, wateringDays });
+    // Hier würde die Logik zum Hinzufügen einer Pflanze kommen
+    // z.B. zu einem State Management System oder API
+    
+    // Erfolgs-Feedback
+    Alert.alert(
+      'Pflanze hinzugefügt',
+      `${plantName} wurde erfolgreich hinzugefügt!`,
+      [{ text: 'OK' }]
+    );
+    
+    // Formular zurücksetzen
+    setPlantName('');
+    setWateringDays('');
   };
 
   return (
@@ -34,7 +52,7 @@ export default function AddPlantScreen() {
           onChangeText={setWateringDays}
           placeholder="z.B. 7"
           placeholderTextColor="#999"
-          keyboardType="numeric"
+          keyboardType="number-pad"
         />
 
         <TouchableOpacity 
