@@ -14,6 +14,8 @@ import {
  * @param {Date} selectedDate - Currently selected date
  * @param {Function} onDateSelect - Callback when a date is selected
  */
+const CALENDAR_GRID_SIZE = 42; // 6 rows * 7 days
+
 export default function Calendar({ 
   currentDate, 
   onMonthChange, 
@@ -30,7 +32,8 @@ export default function Calendar({
     
     // First day of month (0 = Sunday, 1 = Monday, etc.)
     const firstDay = new Date(year, month, 1);
-    // Adjust: 0 (Sunday) becomes 6, 1 (Monday) becomes 0, etc.
+    // Convert Sunday-based (0=Sun) to Monday-based (0=Mon) week format:
+    // Adding 6 and using modulo converts: Sun(0)→6, Mon(1)→0, Tue(2)→1, etc.
     const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
     
     // Last day of month
@@ -62,7 +65,7 @@ export default function Calendar({
     }
     
     // Add next month's days to complete the grid
-    const remainingDays = 42 - days.length; // 6 rows * 7 days
+    const remainingDays = CALENDAR_GRID_SIZE - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       days.push({
         day,
