@@ -1,0 +1,36 @@
+{
+	"expo": {
+		"name": "PlantCare",
+		"slug": "plantcare",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/images/icon.png",
+		"userInterfaceStyle": "light",
+		"splash": {
+			"image": "./assets/splash/splash-icon-light.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#ffffff"
+		},
+		"assetBundlePatterns": ["**/*"],
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.kenji839.plantcare",
+			"icon": {
+				"dark": "./assets/icon/ios-dark.png",
+				"light": "./assets/icon/ios-light.png",
+				"tinted": "./assets/icon/ios-tinted.png"
+			}
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/icons/adaptive-icon.png",
+				"monochromeImage": "./assets/icons/adaptive-icon.png",
+				"backgroundColor": "#ffffff"
+			},
+			"package": "com.kenji839.plantcare"
+		},
+		"web": {
+			"favicon": "./assets/favicon.png"
+		}
+	}
+}
