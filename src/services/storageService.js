@@ -2,6 +2,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PLANTS_KEY = '@plants';
 const TASKS_KEY = '@tasks';
+const COUNTER_KEY = '@counter';
+
+/**
+ * Get next unique ID
+ */
+async function getNextId() {
+  try {
+    const counter = await AsyncStorage.getItem(COUNTER_KEY);
+    const nextId = counter ? parseInt(counter) + 1 : 1;
+    await AsyncStorage.setItem(COUNTER_KEY, nextId.toString());
+    return nextId;
+  } catch (error) {
+    console.error('Error generating ID:', error);
+    // Fallback to timestamp-based ID
+    return Date.now();
+  }
+}
 
 /**
  * Storage service for managing plants and tasks using AsyncStorage
@@ -44,7 +61,7 @@ export const storageService = {
       const plants = await this.getPlants();
       const newPlant = {
         ...plant,
-        id: Date.now(),
+        id: await getNextId(),
         createdAt: new Date().toISOString(),
       };
       plants.push(newPlant);
@@ -132,7 +149,7 @@ export const storageService = {
       const tasks = await this.getTasks();
       const newTask = {
         ...task,
-        id: Date.now(),
+        id: await getNextId(),
         createdAt: new Date().toISOString(),
       };
       tasks.push(newTask);
@@ -208,7 +225,7 @@ export const storageService = {
    */
   async clearAll() {
     try {
-      await AsyncStorage.multiRemove([PLANTS_KEY, TASKS_KEY]);
+      await AsyncStorage.multiRemove([PLANTS_KEY, TASKS_KEY, COUNTER_KEY]);
     } catch (error) {
       console.error('Error clearing data:', error);
       throw error;

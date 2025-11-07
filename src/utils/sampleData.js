@@ -1,6 +1,25 @@
 import { storageService } from '../services/storageService';
 
 /**
+ * Parse watering interval from benchmark value
+ * @param {string|number} value - Value like "7-10" or "7"
+ * @returns {number} Interval in days
+ */
+function parseWateringInterval(value) {
+  if (!value) return 7; // Default to 7 days
+  if (typeof value === 'number') return value;
+  if (typeof value !== 'string') return 7;
+  
+  // If value contains a dash, take the first number
+  if (value.includes('-')) {
+    const first = value.split('-')[0];
+    return parseInt(first) || 7;
+  }
+  
+  return parseInt(value) || 7;
+}
+
+/**
  * Initialize the app with sample data for testing
  * This is useful for development and demo purposes
  */
@@ -51,7 +70,7 @@ export const initializeSampleData = async () => {
       const plant = await storageService.addPlant(plantData);
       
       // Create watering task
-      const intervalDays = parseInt(plantData.wateringGeneralBenchmark.value.split('-')[0]) || 7;
+      const intervalDays = parseWateringInterval(plantData.wateringGeneralBenchmark?.value);
       const nextDueDate = new Date();
       
       // Set different due dates for variety

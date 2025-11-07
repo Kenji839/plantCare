@@ -4,6 +4,24 @@ import { notificationService } from '../services/notificationService';
 
 const PlantContext = createContext();
 
+/**
+ * Parse watering interval from benchmark value
+ * @param {string} value - Value like "7-10" or "7"
+ * @returns {number} Interval in days
+ */
+function parseWateringInterval(value) {
+  if (!value) return 7; // Default to 7 days
+  if (typeof value !== 'string') return parseInt(value) || 7;
+  
+  // If value contains a dash, take the first number
+  if (value.includes('-')) {
+    const first = value.split('-')[0];
+    return parseInt(first) || 7;
+  }
+  
+  return parseInt(value) || 7;
+}
+
 export const PlantProvider = ({ children }) => {
   const [plants, setPlants] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -42,7 +60,7 @@ export const PlantProvider = ({ children }) => {
       
       // Create default water task for the plant
       if (plantData.wateringGeneralBenchmark) {
-        const intervalDays = parseInt(plantData.wateringGeneralBenchmark.value.split('-')[0]) || 7;
+        const intervalDays = parseWateringInterval(plantData.wateringGeneralBenchmark.value);
         const nextDueDate = new Date(Date.now() + intervalDays * 24 * 60 * 60 * 1000);
         
         const waterTask = {
@@ -55,14 +73,14 @@ export const PlantProvider = ({ children }) => {
           },
           nextDueDate: nextDueDate.toISOString(),
         };
-        await addTask(waterTask);
+        const createdTask = await addTask(waterTask);
 
-        // Schedule notification
+        // Schedule notification with actual task ID
         await notificationService.scheduleWateringNotification({
           plantName: plantData.name,
           plantImage: plantData.imageUri,
           triggerDate: nextDueDate,
-          taskId: Date.now(), // Will be updated with actual task ID
+          taskId: createdTask.id,
         });
       }
       
