@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { usePlants } from '../context/PlantContext';
 import { storageService } from '../services/storageService';
+import { initializeSampleData, resetWithSampleData } from '../utils/sampleData';
 
 export default function ProfileScreen() {
   const { plants, tasks, refreshData } = usePlants();
@@ -27,6 +28,35 @@ export default function ProfileScreen() {
         },
       ]
     );
+  };
+
+  const handleLoadSampleData = async () => {
+    try {
+      if (plants.length > 0) {
+        Alert.alert(
+          'Load Sample Data',
+          'You already have plants. Do you want to replace all data with sample data?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Replace',
+              style: 'destructive',
+              onPress: async () => {
+                await resetWithSampleData();
+                await refreshData();
+                Alert.alert('Success', 'Sample data loaded successfully');
+              },
+            },
+          ]
+        );
+      } else {
+        await initializeSampleData();
+        await refreshData();
+        Alert.alert('Success', 'Sample data loaded successfully');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load sample data');
+    }
   };
 
   return (
@@ -58,12 +88,21 @@ export default function ProfileScreen() {
           <Text style={styles.version}>Version 1.0.0</Text>
         </View>
 
-        <TouchableOpacity 
-          style={styles.dangerButton}
-          onPress={handleClearData}
-        >
-          <Text style={styles.dangerButtonText}>Clear All Data</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity 
+            style={styles.primaryButton}
+            onPress={handleLoadSampleData}
+          >
+            <Text style={styles.primaryButtonText}>Load Sample Data</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.dangerButton}
+            onPress={handleClearData}
+          >
+            <Text style={styles.dangerButtonText}>Clear All Data</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -134,6 +173,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginTop: 5,
+  },
+  buttonGroup: {
+    gap: 15,
+  },
+  primaryButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   dangerButton: {
     backgroundColor: '#F44336',
